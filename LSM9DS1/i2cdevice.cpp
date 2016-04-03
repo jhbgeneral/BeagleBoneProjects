@@ -128,7 +128,8 @@ unsigned char I2CDevice::readRegister(unsigned int registerAddress){
  * defaults to 0x00.
  * @param number the number of registers to read from the device
  * @param fromAddress the starting address to read from
- * @return a pointer of type unsigned char* that points to the first element in the block of registers
+ * @return a pointer of type unsigned char* that points to the first element in the block of registers;
+ * the memory block is allocated here, and bust be deleted by the consumer
  */
 unsigned char* I2CDevice::readRegisters(unsigned int number, unsigned int fromAddress)
 {

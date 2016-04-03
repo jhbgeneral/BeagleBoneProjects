@@ -1,7 +1,7 @@
 #include <iostream>
 #include <math.h>
 
-#include "i2cdevice.h"
+#include "lsm9ds1.h"
 
 int writeRegister (int file, unsigned char address, char value);
 int readRegisters (int file);
@@ -35,24 +35,6 @@ using namespace std;
 #include <unistd.h>
 
 
-#define DEVID_REG   0x0F
-// #define DEVADDR     0x1E    // Magnetometer sensor, should readback 0x3d
-#define DEVADDR     0x6B    // Accelerometer / Gyroscope sensor, should readback 0x68
-#define BUFFER_SIZE 0x40
-#define ACCEL_VALS_BASE 0x28
-enum {
-    ACCEL_X_LO_OFST = 0,
-    ACCEL_X_HI_OFST,
-    ACCEL_Y_LO_OFST,
-    ACCEL_Y_HI_OFST,
-    ACCEL_Z_LO_OFST,
-    ACCEL_Z_HI_OFST,
-    ACCEL_VALS_SIZE
-};
-
-// Small macro to display value in hexadecimal with 2 places
-#define COMBINE_VALUES(lo,hi) ((short)((((short) hi) << 8) | ((short) lo)))
-
 char readBuffer[BUFFER_SIZE];
 
 int main(void)
@@ -60,20 +42,10 @@ int main(void)
     printf("Starting LSM9DS1 test application\n");
 
     // The constructor does the open() and ioctl()
-    I2CDevice dev (1, DEVADDR);
+    LSM9DS1 dev (1, ACC_DEVADDR);
 
-// The above constructor does the open() and ioctl()
-//    if ((file = open("/dev/i2c-1", O_RDWR)) < 0 ) {
-//        perror("Failed to open the bus device\n");
-//        return 1;
-//    }
-//
-//    if (ioctl(file, I2C_SLAVE, DEVADDR) < 0) {
-//        perror("Failed to connect to the sensor\n");
-//        return 1;
-//    }
-
-    readBuffer[0] = dev.readRegister(DEVID_REG);
+//    readBuffer[0] = dev.readRegister(DEVID_REG);
+    dev.readSensorState();
 
 // The above does the write (to set the address) and the read
 //    {
@@ -129,10 +101,13 @@ int main(void)
 //            return 1;
 //        }
 
+        // Get Acceleration values
+        double x, y, z;
+
         // Convert register values into real numbers
-        double x = COMBINE_VALUES (readBuffer[ACCEL_X_LO_OFST], readBuffer[ACCEL_X_HI_OFST]);
-        double y = COMBINE_VALUES (readBuffer[ACCEL_Y_LO_OFST], readBuffer[ACCEL_Y_HI_OFST]);
-        double z = COMBINE_VALUES (readBuffer[ACCEL_Z_LO_OFST], readBuffer[ACCEL_Z_HI_OFST]);
+        x = dev.combineRegisters(readBuffer[ACCEL_X_HI_OFST], readBuffer[ACCEL_X_LO_OFST]);
+        y = dev.combineRegisters(readBuffer[ACCEL_Y_HI_OFST], readBuffer[ACCEL_Y_LO_OFST]);
+        z = dev.combineRegisters(readBuffer[ACCEL_Z_HI_OFST], readBuffer[ACCEL_Z_LO_OFST]);
         double scale = 16384;
         x /= scale; y /= scale; z /= scale;
 

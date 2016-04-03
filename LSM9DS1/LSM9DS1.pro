@@ -5,11 +5,13 @@ CONFIG -= qt
 
 SOURCES += \
     main.cpp \
-    i2cdevice.cpp
+    i2cdevice.cpp \
+    lsm9ds1.cpp
 
 target.path = /home/jhb
 
 INSTALLS += target
 
 HEADERS += \
-    i2cdevice.h
+    i2cdevice.h \
+    lsm9ds1.h
